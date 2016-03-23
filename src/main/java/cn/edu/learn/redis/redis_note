@@ -1,0 +1,122 @@
+一、安装redis
+	1、tar -zxvf redis-3.0.1.tar.gz -C /opt/install /redis
+	2、进入redis目录，执行make命令进行编译
+	3、将redis.conf拷贝到/usr/local/redis目录
+	3、进入src目录，将redis-server和redis-cli拷贝到/usr/local/redis目录下
+	5、修改redis.conf，将daemonize 项设置为 yes
+	6、执行./redis-server启动redis进程
+	7、通过ps -A | grep redis 查看进程是否启动（6379）
+	8、杀死进程 kill -9（强制） 7287(进程号)
+
+二、添加数据
+	1、key的要求，不能\n和空格
+		1、exists key 测试指定的key是否存在
+		2、del key1 key2 ...keyN
+		3、type key 返回给定key的value的类型
+		4、rename oldkey newkey 修改key
+		5、dbsise 返回缓存中的key的数量
+		6、keys* 返回所有的key
+		7、flushdb 删除所有key
+		8、expire key 10 指定有效时间
+		9、select db-insex 选择数据段（select 1	）
+		10、move key db-index 从数据段中移除对应数据
+        11、keys patten(keys *)    返回匹配指定模式的所有key
+
+	2、String类型
+		1、string可以包含任意数据（jpg图片，序列化对象）单个value大小1G
+
+		2、string类型操作
+		   1、set key value                      设置key对应的值为string类型的value
+		   2、mset key1 value1 ...keyN valueN    一次设置多个key的值
+		   3、mget key1 key2 ... keyN            一次返回多个key的值
+		   4、incr key                           key的值加加
+		   5、decr key                           key的值减减
+		   6、incrby key integer                 加指定的值
+		   7、decrby key integer                 减指定的值
+		   8、append key value                   追加
+		   9、substr key start end               返回截取字段
+
+	3、list类型操作
+		1、lpush key string 	在key对应的list的头部添加字符串
+		2、rpop key 		从list的尾部删除元素，并返回删除元素
+		3、llen key		返回对应list的长度，key不存在返回0
+		4、lrange key start end	返回指定区间的元素，从下标start开始
+		5、rpush key string	在list尾部添加元素
+		6、lpop key 		从list的头部删除元素
+		7、ltrim key start end 	截取list，保留指定区间的元素
+
+	4、set集合
+		1、set是string类型的无序集合，可以用来求并集，交集，差集（集合中元素不能重复）
+
+		2、set集合的操作
+			1、sadd key member	添加一个string元素到key对应的set集合，成功返回1，已经存在返回0
+			2、srem key member 	从key对应的set集合中移除member元素，成功返回1
+			3、smove p1 p2 member	从p1对应的set集合中移除member并添加到p2对应的set中
+			4、scard key 		返回set集合的元素个数
+			5、sismember key member 判断member是否在set中
+			6、sinter key1 key2 ... keyN	返回给定key的交集
+			7、sunion key1 key2 ... keyN 	返回给定key的并集
+			8、sdiff key1 key2 ... keyN	返回给定key的差集
+			9、smembers key 		返回所有元素（无序）
+	5、sort set排序集合类
+		1、sortset中的值每个元素都是值、权的组合（权是用来排序）
+
+		2、sortset集合的操作
+			1、zadd key score(权重) member	添加元素到集合，如果集合中存在则更新对应的score
+			2、zrem key member 		删除指定元素，1表示成功，元素不存在返回0
+			3、zincrby key incr member	增加对应的元素的权重
+			4、zrank key member		返回指定元素在集合中的的排名（集合中元素排序从小到大）
+			5、zrevrank key member		同上（集合从大到小）
+			6、zrange key start end		类似lrange操作，从集合中取指定区间的元素，返回有序的集合、
+			7、zrevrange key start end 	同上，逆序
+			8、zcard key			返回集合的个数
+			9、zscore key element		返回给定元素的score
+			10、zremrangebyrank key min max	删除指定区间的元素
+
+	6、hash类型
+		1、hash操作
+			1、hset key field value		设置hash field为指定的值，如果key不存在，则先创建
+			2、hget key field		获取指定的hash feild
+			3、hmset key field1 value1 ... fieldN valueN 	设置多个field
+			4、hmget key field1 ... fieldN			同时获取多个hash field
+			5、hincrby key field integer 			将指定的field的值加上给定的值
+			6、hexists key field				检测指定的field是否存在
+			7、hdel key field 				删除指定的field
+			8、hlen key					返回指定hash的field的数量
+			9、hkeys key					返回hash的所有field
+			10、hvals key					返回hash所有的values
+			11、hgetall key					返回hash所有的field和value
+三、redis的持久化
+	1、snap shotting快照持久化
+		1、一次性的把redis中的数据全部保存在硬盘中
+		2、文件配置
+		保存 时间  变化（key被修改）
+		save 900   1
+		save 300   10
+		dave 60    10000
+
+	2、手动发起持久化
+		1、./redis-cli -h 127.0.0.1 -p 6379 bgsave
+
+		2、持久化相关命令
+			1、bgsave 异步保存数据到磁盘
+			2、lastsave 返回上次成功保存到磁盘的unix服务器的时间戳
+			3、shutdown 同步保存到服务器，并关闭redis服务器
+			4、bgrewriteaof 当日志文件过长势优化AOF日志文件存储
+
+	3、append only file(AOF持久化)
+		1、开启AOF持久化（会清空redis服务器里面的数据）将appendonly 设置为yes
+
+		2、备份的频率
+			1、appendfsync always 收到写命令，就进行备份，性能低
+			2、appendfsync everysec 每秒强制写一次磁盘，性能和持久化的折衷选择
+			3、appendfsync no 	依赖于os,性能高，数据没有保证
+
+		3、AOF备份文件的优化
+			./redis-cli -h ip -p 6379(文件压缩)
+			./redis-cli bgrewriteaof
+
+		4、主从复制
+		修改redis.conf  	slaveof 192.168.182.133 6379
+					slave-read-only yes
+		重启进程
