@@ -1,6 +1,4 @@
-package cn.edu.learn.interview.design;
-
-import java.util.concurrent.locks.ReentrantLock;
+package cn.edu.learn.interview.design.single;
 
 /**
  * @description: 单例模式
@@ -12,7 +10,7 @@ public class SingleTon {
 
     private SingleTon() {}
 
-    public SingleTon getInstance() {
+    public static SingleTon getInstance() {
         if (singleTon == null)
             synchronized (SingleTon.class) {
                 if (singleTon == null) {
