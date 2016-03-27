@@ -6,7 +6,7 @@ package cn.edu.learn.interview.design.listener.interfaces;
  * @date 2016/3/27
  * @version: 1.0
  */
-public interface Subject {
+public interface Observerable {
     /**
      *
      * @param listener
