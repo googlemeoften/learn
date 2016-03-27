@@ -10,9 +10,9 @@ public interface Listener<T> {
 
     /**
      * 事件更新
-     * @param e
+     * @param event
      */
-    void update(Event<T> e);
+    void update(Event<T> event);
 
     /**
      * 获得事件信息
