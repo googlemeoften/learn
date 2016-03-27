@@ -1,4 +1,4 @@
-package cn.edu.learn.interview.filter;
+package cn.edu.learn.interview.design.filter;
 
 /**
  * @description:
@@ -6,19 +6,19 @@ package cn.edu.learn.interview.filter;
  * @date 2016/3/27
  * @version: 1.0
  */
-public class SensitiveFilter extends Filter {
+public class HTMLFilter extends Filter {
 
     @Override
     void doRequest(Request request) {
         String str = request.requestStr;
 
-        str = str.replaceAll("敏感", "**").replaceAll("色情", "**");
+        str = str.replaceAll("<", "[").replaceAll(">", "]");
 
         request.requestStr = str;
     }
 
     @Override
     void doResponse(Response response) {
-        response.responseStr += " 2--Sensitive ";
+        response.responseStr += " 1--HTML ";
     }
 }
