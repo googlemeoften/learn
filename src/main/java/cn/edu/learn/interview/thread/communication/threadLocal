@@ -1,0 +1,48 @@
+ThreadLocal的理解
+    1、网上所说的每个线程都维持着变量的副本，于是我抱着这种看法去理解ThreadLocal类
+
+    但是我看了三遍代码还是不能够理解，因为我一直去寻找使用clone()的地方，但是一直没有找到
+
+    于是我放弃了网上的想法，自己慢慢的理解源码，最后才理解到每个线程里保存的对象不是clone出来的，
+
+    其实还是new出来的对象。
+
+    2、源码分析：
+       ThreadLocal的get()方法：
+
+       public T get() {
+               Thread t = Thread.currentThread();
+               ThreadLocalMap map = getMap(t);
+               if (map != null) {
+                   ThreadLocalMap.Entry e = map.getEntry(this);
+                   if (e != null)
+                       return (T)e.value;
+               }
+               return setInitialValue();
+        }
+    这段源码主要涉及到两个操作：
+
+        第一步、拿到当前线程，从线程中获得一个ThreadLocalMap的对象，这个对象就是用来保存所谓副本的地方
+
+        第二步、有两种可能：
+            1、如果ThreadLocalMap对象不为空且该对象中的元素不为空，就从该对象中获取副本，并且返回
+
+            2、对象为空，调用setInitialValue（）方法初始化
+
+     ThreadLocal.setInitialValue（）源码
+
+     private T setInitialValue() {
+             T value = initialValue();
+             Thread t = Thread.currentThread();
+             ThreadLocalMap map = getMap(t);
+             if (map != null)
+                 map.set(this, value);
+             else
+                 createMap(t, value);
+             return value;
+     }
+     这段源码主要涉及到两个操作
+
+        第一步：调用initialValue()方法，设置获得初始值，该方法返回null，我们可以重写该方法，就像我在ConnectionManager类中的例子。
+
+        第二步、将值设置到map中，并返回该值
