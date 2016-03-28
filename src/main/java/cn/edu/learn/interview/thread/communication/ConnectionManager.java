@@ -8,7 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * @description: 使用threadLocal实现数据库的链接
+ * @description: 浣跨敤threadLocal瀹炵幇鏁版嵁搴撶殑閾炬帴
  * @author: hey
  * @date 2016/3/28
  * @version: 1.0
@@ -27,7 +27,7 @@ public class ConnectionManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
-                log.debug("找不到驱动类");
+                log.debug("鎵句笉鍒伴┍鍔ㄧ被");
             }
             return con;
         }
