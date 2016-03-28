@@ -30,7 +30,9 @@ public class NumInc {
 
     private volatile int value;
 
-    public NumInc() {}
+    public NumInc() {
+        
+    }
 
     public NumInc(int value) {
         this.value = value;
