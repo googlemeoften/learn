@@ -1,0 +1,136 @@
+AQS共享锁（AQS框架主要使用了模板方法模式）
+
+    1、AQS共享锁的主要实现子类是CountDownLatch类，CountDownLatcher为JUC包下的计数器工具类。它在初始时需要指定一个
+
+    计数器的大小，然后可被多个线程并发的实现减1操作，并在计数器为0后调用await方法的线程被唤醒，从而实现多线程间的协作
+
+    参考案例在我的gitHub中给出
+
+    2、AQS共享锁源码分享
+
+        1、首先要明确的就是不管是ReentrantLock还是CountDownLatch类都是通过volatile的整型变量state来实现的同步或者共享
+
+        Sync(int count) {
+            setState(count);
+         }
+
+        2、首先从CountDownLatch.await()方法开始分析
+
+        public void await() throws InterruptedException {
+            sync.acquireSharedInterruptibly(1);
+        }
+
+        在CountDownLatch和ReentrantLock一样，也有一个Sync类，该类继承了抽象类AQS（AbstractQueuedSynchronizer）
+
+        我们具体来看一下Sync.acquireSharedInterruptibly(int arg)方法
+
+        public final void acquireSharedInterruptibly(int arg)
+                    throws InterruptedException {
+                if (Thread.interrupted())
+                    throw new InterruptedException();
+                if (tryAcquireShared(arg) < 0)
+                    doAcquireSharedInterruptibly(arg);
+        }
+
+        该方法主要做了两个操作
+
+            1、检测线程是否被打断（Thread.interrupted()）
+
+            2、尝试获得共享锁（tryAcquireShared(arg)），如果返回值 < 0,就表示失败，失败的线程会被放到队列中
+
+        Sync.tryAcquireShared()方法
+
+         protected int tryAcquireShared(int acquires) {
+               return (getState() == 0) ? 1 : -1;
+         }
+
+         该方法重写了AQS的tryAcquireShared（）方法，（模板方法模式），如果state==0,就说明计数器变为了0
+
+         AQS.doAcquireSharedInterruptibly（）源码
+
+            private boolean doAcquireSharedNanos(int arg, long nanosTimeout)
+                 throws InterruptedException {
+
+                 long lastTime = System.nanoTime();
+                 //对当前线程进行包装，表示是共享类型的
+                 final Node node = addWaiter(Node.SHARED);
+                 boolean failed = true;
+                 try {
+                     for (;;) {
+                         final Node p = node.predecessor();
+                         //如果当前结点是头节点，说明当前节点是AQS队列中等待获取锁的第一个节点，直接尝试获取锁。
+                         if (p == head) {
+                             int r = tryAcquireShared(arg);
+                             if (r >= 0) {
+                                //获取成功，需要将当前节点设置为AQS队列中的第一个节点，这是AQS的规则，队列的头节点表示正在获取锁的节点
+                                 setHeadAndPropagate(node, r);
+                                 p.next = null; // help GC
+                                 failed = false;
+                                 return true;
+                             }
+                         }
+                         if (nanosTimeout <= 0)
+                             return false;
+                         if (shouldParkAfterFailedAcquire(p, node) &&//检查下是否需要将当前节点挂起
+                             nanosTimeout > spinForTimeoutThreshold)
+                             LockSupport.parkNanos(this, nanosTimeout);
+                         long now = System.nanoTime();
+                         nanosTimeout -= now - lastTime;
+                         lastTime = now;
+                         if (Thread.interrupted())
+                             throw new InterruptedException();
+                     }
+                 } finally {
+                     if (failed)
+                         cancelAcquire(node);
+                 }
+             }
+          该方法目的是将当前线程放到队列中，在加入队列的过程中做了许多的判断操作
+
+          AQS.setHeadAndPropagate（Node node,int propagate）方法
+
+           private void setHeadAndPropagate(Node node, int propagate) {
+                  Node h = head; // Record old head for check below
+                  setHead(node);
+                  if (propagate > 0 || h == null || h.waitStatus < 0) {
+                      Node s = node.next;
+                      if (s == null || s.isShared())
+                          doReleaseShared();
+                  }
+            }
+            该方法的调用主要是为了实现锁的共享，当state==0的时候，所有等待该锁的线程都被唤醒
+
+         看完await方法，我们再来看下countDown()方法：
+
+         public void countDown() {
+                 sync.releaseShared(1);
+         }
+
+         还是将操作交给了Sync类
+
+         Sync.releaseShared(1)方法
+
+          public final boolean releaseShared(int arg) {
+                 //对state变量执行减操作，判断当前state是否为0
+                 if (tryReleaseShared(arg)) {
+                    //唤醒所用阻塞线程
+                     doReleaseShared();
+                     return true;
+                 }
+                 return false;
+          }
+          对state变量进行减操作
+
+          Sync.tryReleaseShared(int rele)源码
+
+                protected boolean tryReleaseShared(int releases) {
+                      // Decrement count; signal when transition to zero
+                      for (;;) {
+                          int c = getState();
+                          if (c == 0)
+                              return false;
+                          int nextc = c-1;
+                          if (compareAndSetState(c, nextc))
+                              return nextc == 0;
+                      }
+
