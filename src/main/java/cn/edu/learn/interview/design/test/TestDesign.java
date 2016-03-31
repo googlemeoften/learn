@@ -3,6 +3,7 @@ package cn.edu.learn.interview.design.test;
 import cn.edu.learn.interview.design.single.SingleTon;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,13 +17,13 @@ public class TestDesign {
 
     @Test
     public void testSingle() throws InterruptedException {
-        final Set<SingleTon> sets = new HashSet<SingleTon>();
+        final Set<SingleTon> sets = Collections.synchronizedSet(new HashSet<SingleTon>());
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    sets.add(SingleTon.getInstance());
+                    sets.add(SingleTon.getInstance("dave" + Math.random()*100));
                 }
             }).start();
         }
@@ -31,8 +32,4 @@ public class TestDesign {
 
         System.out.println(sets.size());
     }
-
-    @Test
-    public void testChain(){}
-
 }

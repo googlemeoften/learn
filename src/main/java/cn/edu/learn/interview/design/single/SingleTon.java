@@ -6,18 +6,37 @@ package cn.edu.learn.interview.design.single;
  * @Date:2016/3/27
  */
 public class SingleTon {
-    private static volatile SingleTon singleTon;
+    private String name;
 
-    private SingleTon() {}
+    private volatile static SingleTon singleTon;
 
-    public static SingleTon getInstance() {
-        if (singleTon == null)
+    private SingleTon(String name) {
+        this.name = name;
+    }
+
+    public static SingleTon getInstance(String name) {
+        if (singleTon == null) {
             synchronized (SingleTon.class) {
-                if (singleTon == null) {
-                    singleTon = new SingleTon();
-                }
+                if (singleTon == null)
+                    singleTon = new SingleTon(name);
             }
-
+        }
         return singleTon;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SingleTon singleTon = (SingleTon) o;
+
+        return name.equals(singleTon.name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }
