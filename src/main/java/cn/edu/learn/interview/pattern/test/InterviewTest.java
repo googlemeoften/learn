@@ -1,9 +1,6 @@
 package cn.edu.learn.interview.pattern.test;
 
-import cn.edu.learn.interview.pattern.HeapSort;
-import cn.edu.learn.interview.pattern.HillSort;
-import cn.edu.learn.interview.pattern.MergeSort;
-import cn.edu.learn.interview.pattern.QuickSort;
+import cn.edu.learn.interview.pattern.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,6 +33,7 @@ public class InterviewTest {
         System.out.println("after sort :" + Arrays.toString(nums));
     }
 
+    @Test
     public void testMergeSort() {
         System.out.println("before sort :" + Arrays.toString(nums));
 
@@ -56,14 +54,30 @@ public class InterviewTest {
     @Test
     public void testHeapSort() {
         HeapSort heap = new HeapSort();
-        for (int i = 0; i < nums.length; i++){
+        for (int i = 0; i < nums.length; i++) {
             int num = (int) (Math.random() * 100);
             System.out.print(num + " ");
             heap.insert(num);
         }
         System.out.println("");
-        for (int i = 0; i < nums.length; i++){
+        for (int i = 0; i < nums.length; i++) {
             System.out.print(heap.remove() + " ");
         }
+    }
+
+    @Test
+    public void testBinarySearch() {
+
+        System.out.println("before sort :" + Arrays.toString(nums));
+
+        HillSort.sort(nums);
+
+        System.out.println("after sort :" + Arrays.toString(nums));
+
+        // int searchNum = (int) (Math.random() * 100);
+        int searchNum = nums[(int) (Math.random() * 10)];
+        System.out.println(searchNum);
+        int postion = BinarySearch.binarySearch2(nums, searchNum);
+        System.out.println(postion);
     }
 }

@@ -17,7 +17,7 @@ public class QuickSort {
 
         if (nums == null)
             throw new IllegalArgumentException("the array is null");
-        if ((right - left) + 1 < 2)
+        if ((right - left) < 1)
             return;
 
         int part = partition(nums, left, right);
@@ -46,6 +46,7 @@ public class QuickSort {
                 }
             }
         }
+
         if (index + 1 != right)
             swap(a, index + 1, right);
         return index + 1;
