@@ -15,6 +15,7 @@ public class SingleTon {
     }
 
     public static SingleTon getInstance(String name) {
+
         if (singleTon == null) {
             synchronized (SingleTon.class) {
                 if (singleTon == null)
